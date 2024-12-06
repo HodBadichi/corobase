@@ -56,9 +56,9 @@ $ cmake ../ -DCMAKE_BUILD_TYPE=[Debug/Release/RelWithDebInfo]
 $ make -jN
 ```
 
-Currently the code can compile under Clang 8.0+. E.g., to use Clang 8.0, issue the following `cmake` command instead:
+Currently the code can compile under Clang 8+. E.g., to use Clang 8, issue the following `cmake` command instead:
 ```
-$ CC=clang-8.0 CXX=clang++-8.0 cmake ../ -DCMAKE_BUILD_TYPE=[Debug/Release/RelWithDebInfo]
+$ CC=clang-8 CXX=clang++-8 cmake ../ -DCMAKE_BUILD_TYPE=[Debug/Release/RelWithDebInfo]
 ```
 
 After `make` there will be two executables under `build`: 
