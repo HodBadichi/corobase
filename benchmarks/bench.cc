@@ -15,7 +15,7 @@
 #include <signal.h>
 
 #include "bench.h"
-
+#include <ittnotify.h>
 #include "../dbcore/rcu.h"
 #include "../dbcore/sm-chkpt.h"
 #include "../dbcore/sm-cmd-log.h"
@@ -364,7 +364,7 @@ void bench_runner::start_measurement() {
       perf_pid = pid;
     }
   }
-
+  __itt_resume();
   barrier_a.wait_for();  // wait for all threads to start up
   std::map<std::string, size_t> table_sizes_before;
   if (ermia::config::verbose) {
@@ -485,7 +485,7 @@ void bench_runner::start_measurement() {
   }
 
   const unsigned long elapsed_nosync = t_nosync.lap();
-
+  __itt_pause();
   if (ermia::config::enable_perf) {
     std::cerr << "stop perf..." << std::endl;
     kill(perf_pid, SIGINT);
