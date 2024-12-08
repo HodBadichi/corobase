@@ -88,27 +88,27 @@ $./run.sh ./ermia_SI ycsb 10 48 20 \
          "-w C -r 10 -s 100000000 -t sequential"
 
 CoroBase (optimized 2-level coroutine-to-transaction design)
-$./run.sh ./ermia_SI ycsb 10 48 20 \
+$./run.sh ./ermia_SI ycsb 10 1 20 \
          "-physical_workers_only=1 -index_probe_only=1 -node_memory_gb=50 -null_log_device=1 -coro_tx=1 -coro_batch_size=8" \
          "-w C -r 10 -s 100000000 -t simple-coro"
 
 CoroBase (fully-nested coroutine-to-transaction design)
-$./run.sh ./ermia_adv_coro_SI ycsb 10 48 20 \
+$./run.sh ./ermia_adv_coro_SI ycsb 10 1 20 \
          "-physical_workers_only=1 -index_probe_only=1 -node_memory_gb=50 -null_log_device=1 -coro-tx=1 -coro_batch_size=8" \
          "-w C -r 10 -s 100000000 -t adv-coro"
 
 Coroutine-based multiget (flattened coroutines)
-$./run.sh ./ermia_SI ycsb 10 48 20 \
+$./run.sh ./ermia_SI ycsb 10 1 20 \
          "-physical_workers_only=1 -index_probe_only=1 -node_memory_gb=50 -null_log_device=1" \
          "-w C -r 10 -s 100000000 -t multiget-simple-coro"
 
 Coroutine-based multiget (fully-nested coroutines)
-$./run.sh ./ermia_adv_coro_SI ycsb 10 48 20 \
+$./run.sh ./ermia_adv_coro_SI ycsb 10 1 20 \
          "-physical_workers_only=1 -index_probe_only=1 -node_memory_gb=50 -null_log_device=1 -coro_tx=1" \
          "-w C -r 10 -s 100000000 -t multiget-adv-coro"
 
 AMAC-based multiget
-$./run.sh ./ermia_SI ycsb 10 48 20 \
+$./run.sh ./ermia_SI ycsb 10 1 20 \
          "-physical_workers_only=1 -index_probe_only=1 -node_memory_gb=50 -null_log_device=1" \
          "-w C -r 10 -s 100000000 -t multiget-amac"
 ```
