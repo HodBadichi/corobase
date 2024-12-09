@@ -357,15 +357,15 @@ void bench_runner::start_measurement() {
         exit(execl("/specific/disk1/roeew-local/linux/tools/perf/perf","perf","record", "-F", "99", "-e", ermia::config::perf_record_event.c_str(),
                    "-p", parent_pid.str().c_str(), nullptr));
       } else {
-        exit(execl("/specific/disk1/roeew-local/linux/tools/perf/perf","perf","stat", "-B", "-e",  "cache-references,cache-misses,cycles,instructions,branches,faults", 
+        exit(execl("/specific/disk1/roeew-local/linux/tools/perf/perf","perf","stat", "-B", "-e",  "cycles,cycle_activity.stalls_l3_miss,longest_lat_cache.miss,cycle_activity.stalls_total", 
                    "-p", parent_pid.str().c_str(), nullptr));
       }
     } else {
       perf_pid = pid;
     }
   }
-  __itt_resume();
   barrier_a.wait_for();  // wait for all threads to start up
+   __itt_resume();
   std::map<std::string, size_t> table_sizes_before;
   if (ermia::config::verbose) {
     for (std::map<std::string, ermia::OrderedIndex *>::iterator it = open_tables.begin();
