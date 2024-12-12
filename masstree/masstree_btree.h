@@ -964,11 +964,11 @@ retry2:
   // Loop over internal nodes.
   while (!v[sense].isleaf()) {
     const Masstree::internode<P>* in = static_cast<const Masstree::internode<P>*>(n[sense]);
-    in->prefetch();
-    co_await std::experimental::suspend_always{};
     int kp = Masstree::internode<P>::bound_type::upper(lp.ka_, *in);
     n[!sense] = in->child_[kp];
     if (!n[!sense]) goto retry2;
+    n[!sense]->prefetch_full();
+    co_await std::experimental::suspend_always{};
     v[!sense] = n[!sense]->stable_annotated(ti.stable_fence());
 
     if (likely(!in->has_changed(v[sense]))) {
