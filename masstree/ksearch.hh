@@ -39,12 +39,9 @@ int key_upper_bound_by(const KA& ka, const T& n, F comparator) {
     int m = (l + r) >> 1;
     int mp = perm[m];
     int cmp = comparator(ka, n, mp);
-    if (cmp < 0)
-      r = m;
-    else if (cmp == 0)
-      return m + 1;
-    else
-      l = m + 1;
+    r = (cmp < 0 ) * m + (cmp >=0 ) * r;
+    l = (cmp > 0) *(m+1) + (cmp <=0) * l;
+    if (cmp == 0) return m+1;
   }
   return l;
 }
