@@ -964,7 +964,7 @@ retry2:
   // Loop over internal nodes.
   while (!v[sense].isleaf()) {
     const Masstree::internode<P>* in = static_cast<const Masstree::internode<P>*>(n[sense]);
-    int kp = Masstree::internode<P>::bound_type::upper(lp.ka_, *in);
+    int kp = Masstree::internode<P>::bound_type::upper(lp.ka_, *in, false);
     n[!sense] = in->child_[kp];
     if (!n[!sense]) goto retry2;
     n[!sense]->prefetch_full();

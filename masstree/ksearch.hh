@@ -32,7 +32,22 @@ struct key_indexed_position {
 };
 
 template <typename KA, typename T, typename F>
-int key_upper_bound_by(const KA& ka, const T& n, F comparator) {
+int key_upper_bound_by_branchless(const KA& ka, const T& n, F comparator) {
+  typename key_permuter<T>::type perm = key_permuter<T>::permutation(n);
+  int l = 0, r = perm.size();
+  while (l < r) {
+    int m = (l + r) >> 1;
+    int mp = perm[m];
+    int cmp = comparator(ka, n, mp);
+    r = (cmp<0) * m + (cmp>=0) * r;
+    l = (cmp>0) * (m+1) + (cmp<=0) * l;
+    if (cmp == 0) return m+1;
+  }
+  return l;
+}
+
+template <typename KA, typename T, typename F>
+int key_upper_bound_by_branched(const KA& ka, const T& n, F comparator) {
   typename key_permuter<T>::type perm = key_permuter<T>::permutation(n);
   int l = 0, r = perm.size();
   while (l < r) {
@@ -40,13 +55,28 @@ int key_upper_bound_by(const KA& ka, const T& n, F comparator) {
     int mp = perm[m];
     int cmp = comparator(ka, n, mp);
     if (cmp < 0)
-	    r = m;
+      r = m;
     else if (cmp == 0)
-	    return m + 1;
+      return m+1;
     else
-	    l = m + 1;
+      l = m+1;
   }
   return l;
+}
+
+template <typename KA, typename T, typename F>
+int key_upper_bound_by(const KA& ka, const T& n, F comparator, bool old_version = true) {
+  if (old_version)
+    return key_upper_bound_by_branched(ka, n, comparator);
+  else
+    {
+      std::cout << "new version checked"
+      if (key_upper_bound_by_branchless(ka, n, comparator) != key_upper_bound_by_branched(ka, n, comparator)) {
+        printf("key_upper_bound_by_branchless(%d) != key_upper_bound_by_branched(%d)\n", key_upper_bound_by_branchless(ka, n, comparator), key_upper_bound_by_branched(ka, n, comparator));
+        exit(1);
+      }
+      return key_upper_bound_by_branchless(ka, n, comparator);
+    }
 }
 
 template <typename KA, typename T>
@@ -114,8 +144,8 @@ key_indexed_position key_find_lower_bound_by(const KA& ka, const T& n,
 struct key_bound_binary {
   static constexpr bool is_binary = true;
   template <typename KA, typename T>
-  static inline int upper(const KA& ka, const T& n) {
-    return key_upper_bound_by(ka, n, key_comparator<KA, T>());
+  static inline int upper(const KA& ka, const T& n, bool old_version = true) {
+    return key_upper_bound_by(ka, n, key_comparator<KA, T>(), old_version);
   }
   template <typename KA, typename T>
   static inline key_indexed_position lower(const KA& ka, const T& n) {
