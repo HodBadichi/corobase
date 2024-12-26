@@ -6,16 +6,12 @@ endif("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
 project(ermia)
 cmake_minimum_required(VERSION 3.1)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -std=c++14 -fcoroutines-ts -stdlib=libc++ -Woverloaded-virtual -Werror=reorder -Werror=unused-result -Wno-address-of-packed-member")
-set(LINK_FLAGS "-lc++abi -libverbs -lnuma -lpthread -pthread -lrt -lglog -lgflags -littnotify -ldl")
-# Add Tracy library with full path
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -std=c++14 -fcoroutines-ts -stdlib=libc++ -Woverloaded-virtual -Werror=reorder -Werror=unused-result -Wno-address-of-packed-member -L/opt/intel/oneapi/vtune/latest/lib64 -I/opt/intel/oneapi/vtune/latest/include")
+set(LINK_FLAGS "-lc++abi -libverbs -lnuma -lpthread -pthread -lrt -lglog -lgflags -littnotify")
 link_libraries(${LINK_FLAGS})
 
-# Add VTune library path to link directories instead of CXX_FLAGS
-link_directories(/opt/intel/oneapi/vtune/latest/lib64)
-include_directories(/opt/intel/oneapi/vtune/latest/include)
 
-include_directories(/opt/dis/llvm-libc++/include/c++/v1)
+include_directories(/opt/dis/llvm-libc++/include/c++/v1 )
 link_directories(/opt/dis/llvm-libc++/lib)
 
 # Pre-build glog and gflags with libc++
@@ -30,9 +26,6 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 add_definitions(-DMASSTREE)
 # Assume 64-byte cache line
 add_definitions(-DCACHELINE_SIZE=64)
-# Enable Tracy profiler
-add_definitions(-DTRACY_ENABLE)
-add_definitions(-DTRACY_FIBERS)
 
 set(MASSTREE_CONFIG "--enable-max-key-len=1024 --with-malloc=malloc")
 
@@ -51,9 +44,6 @@ include_directories(third-party/sparsehash/src)
 # The required headers for libc++.
 include_directories(third-party/glog/include)
 include_directories(third-party/gflags/include)
-
-# Add Tracy include directory
-include_directories(/specific/disk1/hodbadihi/tracy/public/tracy)
 
 add_subdirectory(benchmarks)
 add_subdirectory(dbcore)
@@ -79,30 +69,20 @@ get_property(THREAD_POOL_SRC GLOBAL PROPERTY THREAD_POOL_SRC)
 add_library(thread_pool SHARED ${THREAD_POOL_SRC})
 
 # SI
-add_library(ermia_si SHARED 
-    ${LIB_ERMIA_SRC}
-    /specific/disk1/hodbadihi/tracy/public/TracyClient.cpp
-)
+add_library(ermia_si SHARED ${LIB_ERMIA_SRC})
 set_target_properties(ermia_si PROPERTIES COMPILE_FLAGS "")
+#set_target_properties(ermia_si PROPERTIES COMPILE_FLAGS "-DCORO_BATCH_COMMIT -DBATCH_SAME_TRX -DCORO_UPDATE_VERSION_CHAIN")
 
-add_executable(ermia_SI 
-    ${CMAKE_CURRENT_SOURCE_DIR}/benchmarks/dbtest.cc
-    /specific/disk1/hodbadihi/tracy/public/TracyClient.cpp
-)
+add_executable(ermia_SI ${CMAKE_CURRENT_SOURCE_DIR}/benchmarks/dbtest.cc)
 set_target_properties(ermia_SI PROPERTIES COMPILE_FLAGS "")
+#set_target_properties(ermia_SI PROPERTIES COMPILE_FLAGS "-DCORO_BATCH_COMMIT -DBATCH_SAME_TRX -DCORO_UPDATE_VERSION_CHAIN")
 target_link_libraries(ermia_SI ermia_si thread_pool)
 
 # SI with fully nested coroutine
-add_library(ermia_adv_coro_si SHARED 
-    ${LIB_ERMIA_SRC}
-    /specific/disk1/hodbadihi/tracy/public/TracyClient.cpp
-)
+add_library(ermia_adv_coro_si SHARED ${LIB_ERMIA_SRC})
 set_target_properties(ermia_adv_coro_si PROPERTIES COMPILE_FLAGS "-DADV_COROUTINE")
 
-add_executable(ermia_adv_coro_SI 
-    ${CMAKE_CURRENT_SOURCE_DIR}/benchmarks/dbtest.cc
-    /specific/disk1/hodbadihi/tracy/public/TracyClient.cpp
-)
+add_executable(ermia_adv_coro_SI ${CMAKE_CURRENT_SOURCE_DIR}/benchmarks/dbtest.cc)
 set_target_properties(ermia_adv_coro_SI PROPERTIES COMPILE_FLAGS "-DADV_COROUTINE")
 target_link_libraries(ermia_adv_coro_SI ermia_adv_coro_si thread_pool)
 
@@ -111,30 +91,18 @@ add_library(thread_pool_ssn SHARED ${THREAD_POOL_SRC})
 set_target_properties(thread_pool_ssn PROPERTIES COMPILE_FLAGS "-DSSN -DEARLY_SSN_CHECK")
 
 # SI+SSN
-add_library(ermia_si_ssn SHARED 
-    ${LIB_ERMIA_SRC}
-    /specific/disk1/hodbadihi/tracy/public/TracyClient.cpp
-)
+add_library(ermia_si_ssn SHARED ${LIB_ERMIA_SRC})
 set_target_properties(ermia_si_ssn PROPERTIES COMPILE_FLAGS "-DSSN -DEARLY_SSN_CHECK")
 
-add_executable(ermia_SI_SSN 
-    ${CMAKE_CURRENT_SOURCE_DIR}/benchmarks/dbtest.cc
-    /specific/disk1/hodbadihi/tracy/public/TracyClient.cpp
-)
+add_executable(ermia_SI_SSN ${CMAKE_CURRENT_SOURCE_DIR}/benchmarks/dbtest.cc)
 set_target_properties(ermia_SI_SSN PROPERTIES COMPILE_FLAGS "-DSSN -DEARLY_SSN_CHECK")
 target_link_libraries(ermia_SI_SSN ermia_si_ssn thread_pool_ssn)
 
 # SI+SSN with fully nested coroutine
-add_library(ermia_adv_coro_si_ssn SHARED 
-    ${LIB_ERMIA_SRC}
-    /specific/disk1/hodbadihi/tracy/public/TracyClient.cpp
-)
+add_library(ermia_adv_coro_si_ssn SHARED ${LIB_ERMIA_SRC})
 set_target_properties(ermia_adv_coro_si_ssn PROPERTIES COMPILE_FLAGS "-DSSN -DEARLY_SSN_CHECK -DADV_COROUTINE")
 
-add_executable(ermia_adv_coro_SI_SSN 
-    ${CMAKE_CURRENT_SOURCE_DIR}/benchmarks/dbtest.cc
-    /specific/disk1/hodbadihi/tracy/public/TracyClient.cpp
-)
+add_executable(ermia_adv_coro_SI_SSN ${CMAKE_CURRENT_SOURCE_DIR}/benchmarks/dbtest.cc)
 set_target_properties(ermia_adv_coro_SI_SSN PROPERTIES COMPILE_FLAGS "-DSSN -DEARLY_SSN_CHECK -DADV_COROUTINE")
 target_link_libraries(ermia_adv_coro_SI_SSN ermia_adv_coro_si_ssn thread_pool_ssn)
 
@@ -177,5 +145,3 @@ if(BUILD_TESTS)
 
     add_subdirectory(tests)
 endif()
-
-link_directories(/specific/disk1/hodbadihi/tracy/public/tracy)
