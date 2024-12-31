@@ -6,8 +6,8 @@ endif("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
 project(ermia)
 cmake_minimum_required(VERSION 3.1)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -std=c++14 -fcoroutines-ts -stdlib=libc++ -Woverloaded-virtual -Werror=reorder -Werror=unused-result -Wno-address-of-packed-member -L/opt/intel/oneapi/vtune/latest/lib64 -I/opt/intel/oneapi/vtune/latest/include")
-set(LINK_FLAGS "-lc++abi -libverbs -lnuma -lpthread -pthread -lrt -lglog -lgflags -littnotify")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -std=c++14 -fcoroutines-ts -stdlib=libc++ -Woverloaded-virtual -Werror=reorder -Werror=unused-result -Wno-address-of-packed-member -I/opt/intel/oneapi/vtune/latest/include")
+set(LINK_FLAGS "-lc++abi -libverbs -lnuma -lpthread -pthread -lrt -lglog -lgflags -littnotify -L/opt/intel/oneapi/vtune/latest/lib64")
 link_libraries(${LINK_FLAGS})
 
 
