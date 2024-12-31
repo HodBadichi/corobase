@@ -31,6 +31,18 @@ struct key_indexed_position {
   inline constexpr key_indexed_position(int i_, int p_) : i(i_), p(p_) {}
 };
 
+
+template <typename T>
+int  key_upper_bound_by(__m512i kav, const T& n, int* dummy_ptr, int* dummy_ptr2)
+{
+    const auto size = n.nkeys_;
+    __m512i block_1 = _mm512_loadu_si512(reinterpret_cast<const __m512i*>(&n.ikey0_));
+    __m512i block_2 = _mm512_loadu_si512(reinterpret_cast<const __m512i*>(&n.ikey0_[8]));
+    __mmask16 comp_mask = _mm512_cmpgt_epu64_mask(block_1, kav) + (_mm512_cmpgt_epu64_mask(block_2, kav) << 8);
+    size_t index = _tzcnt_u32(comp_mask);
+    return (index < size) ? index : size;
+}
+
 template <typename KA, typename T, typename F>
 int key_upper_bound_by(const KA& ka, const T& n, F comparator) {
   typename key_permuter<T>::type perm = key_permuter<T>::permutation(n);
@@ -113,6 +125,10 @@ struct key_bound_binary {
   template <typename KA, typename T>
   static inline int upper(const KA& ka, const T& n) {
     return key_upper_bound_by(ka, n, key_comparator<KA, T>());
+  }
+  template <typename T>
+  static inline int upper(__m512i kav, const T& n, int* dummy_ptr) {
+      return key_upper_bound_by(kav, n, nullptr, nullptr);
   }
   template <typename KA, typename T>
   static inline key_indexed_position lower(const KA& ka, const T& n) {
