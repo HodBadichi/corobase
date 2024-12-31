@@ -365,7 +365,6 @@ void bench_runner::start_measurement() {
     }
   }
   barrier_a.wait_for();  // wait for all threads to start up
-   __itt_resume();
   std::map<std::string, size_t> table_sizes_before;
   if (ermia::config::verbose) {
     for (std::map<std::string, ermia::OrderedIndex *>::iterator it = open_tables.begin();
@@ -485,7 +484,6 @@ void bench_runner::start_measurement() {
   }
 
   const unsigned long elapsed_nosync = t_nosync.lap();
-  __itt_pause();
   if (ermia::config::enable_perf) {
     std::cerr << "stop perf..." << std::endl;
     kill(perf_pid, SIGINT);
@@ -749,6 +747,7 @@ void bench_worker::Scheduler() {
 
   barrier_a->count_down();
   barrier_b->wait_for();
+   __itt_resume();
 
   while (running) {
     coroutine_batch_end_epoch = 0;
@@ -761,7 +760,6 @@ void bench_worker::Scheduler() {
       workload_idxs[i] = workload_idx;
       handles[i] = workload[workload_idx].coro_fn(this, i, 0).get_handle();
     }
-
     while (todo) {
       for (uint32_t i = 0; i < ermia::config::coro_batch_size; i++) {
         if (!handles[i]) {
@@ -783,6 +781,7 @@ void bench_worker::Scheduler() {
 
     ermia::MM::epoch_exit(coroutine_batch_end_epoch, begin_epoch);
   }
+  __itt_pause();
 }
 
 void bench_worker::BatchScheduler() {
