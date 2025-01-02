@@ -357,7 +357,7 @@ void bench_runner::start_measurement() {
         exit(execl("/specific/disk1/roeew-local/linux/tools/perf/perf","perf","record", "-F", "99", "-e", ermia::config::perf_record_event.c_str(),
                    "-p", parent_pid.str().c_str(), nullptr));
       } else {
-        exit(execl("/specific/disk1/roeew-local/linux/tools/perf/perf","perf","stat", "-B", "-e",  "cycles,cycle_activity.stalls_l3_miss,longest_lat_cache.miss,cycle_activity.stalls_total", 
+        exit(execl("/specific/disk1/roeew-local/linux/tools/perf/perf","perf","stat", "-B", "-e",  "mem_load_retired.l1_miss,mem_load_retired.l2_miss,longest_lat_cache.miss,mem_load_retired.l1_hit, MEM_INST_RETIRED.ALL_LOADS,longest_lat_cache.miss", 
                    "-p", parent_pid.str().c_str(), nullptr));
       }
     } else {

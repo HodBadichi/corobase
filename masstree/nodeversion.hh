@@ -52,6 +52,17 @@ class basic_nodeversion {
     return x;
   }
 
+  template <typename SF>
+  basic_nodeversion<P> stable_annotated(SF spin_function, void* dummy_ptr) const {
+    value_type x = v_;
+    // while (x & P::dirty_mask) {
+    //   spin_function(basic_nodeversion<P>(x));
+    //   x = v_;
+    // }
+    // acquire_fence();
+    return x;
+  }
+
   bool locked() const { return v_ & P::lock_bit; }
   bool inserting() const { return v_ & P::inserting_bit; }
   bool splitting() const { return v_ & P::splitting_bit; }

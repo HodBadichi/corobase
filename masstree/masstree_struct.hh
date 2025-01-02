@@ -102,7 +102,7 @@ class node_base : public make_nodeversion<P>::type {
          i < std::min(16 * std::min(P::leaf_width, P::internode_width) + 1,
                       4 * 64);
          i += 64)
-      ::prefetch((const char*)this + i);
+      __builtin_prefetch((const char*)this + i);
   }
 
   void print(FILE* f, const char* prefix, int indent, int kdepth);

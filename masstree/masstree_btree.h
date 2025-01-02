@@ -956,7 +956,7 @@ retry2:
   sense = false;
   n[sense] = root;
   while (1) {
-    v[sense] = n[sense]->stable_annotated(ti.stable_fence());
+    v[sense] = n[sense]->stable_annotated(ti.stable_fence(), nullptr);
     if (!v[sense].has_split()) break;
     n[sense] = n[sense]->unsplit_ancestor();
   }
@@ -970,14 +970,14 @@ retry2:
     if (!n[!sense]) goto retry2;
     n[!sense]->prefetch_full();
     co_await std::experimental::suspend_always{};
-    v[!sense] = n[!sense]->stable_annotated(ti.stable_fence());
+    v[!sense] = n[!sense]->stable_annotated(ti.stable_fence(), nullptr);
     if (likely(!in->has_changed(v[sense]))) {
       sense = !sense;
       continue;
     }
 
     typename Masstree::node_base<P>::nodeversion_type oldv = v[sense];
-    v[sense] = in->stable_annotated(ti.stable_fence());
+    v[sense] = in->stable_annotated(ti.stable_fence(), nullptr);
     if (oldv.has_split(v[sense]) &&
         in->stable_last_key_compare(lp.ka_, v[sense], ti) > 0) {
       goto retry2;

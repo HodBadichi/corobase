@@ -1,0 +1,42 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug ERMIA",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/ermia_SI",
+            "args": [
+                "-physical_workers_only=1",
+                "-index_probe_only=1",
+                "-node_memory_gb=50",
+                "-null_log_device=1",
+                "-coro_tx=1",
+                "-coro_batch_size=8",
+                "-verbose=1",
+                "-benchmark", "ycsb",
+                "-threads", "1",
+                "-scale_factor", "10",
+                "-seconds", "20",
+                "-log_data_dir", "/dev/shm/hodbadihi/ermia-log",
+                "-log_buffer_mb=128",
+                "-log_segment_mb=16384",
+                "-parallel_loading",
+                "-benchmark_options",
+                "-w C -r 10 -s 100000000 -t simple-coro"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        }
+    ]
+}
