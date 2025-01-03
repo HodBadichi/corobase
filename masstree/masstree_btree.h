@@ -934,6 +934,43 @@ inline void mbtree<P>::search_amac(std::vector<AMACState> &states, epoch_num epo
   }
 }
 
+template <typename P>
+static std::tuple<size_t, size_t, size_t, size_t, size_t> calculate_tree_size(Masstree::node_base<P>* root, size_t depth = 0) {
+    if (!root) return {0, depth, 0, 0, 0}; // Base case: if the node is null, return size 0, current depth, node count 0, leaf count 0, and internode count 0
+    size_t size = 0;
+    size_t max_depth = depth; // Initialize max_depth with the current depth
+    size_t node_count = 1; // Count this node
+    size_t leaf_count = 0; // Count of leaf nodes
+    size_t internode_count = 0; // Count of internode nodes
+
+    // Recursively add the size of child nodes
+    if (!root->isleaf()) {
+        auto internode = static_cast<Masstree::internode<P>*>(root);
+        internode_count++; // Increment internode count
+        for (int i = 0; i < internode->nkeys_; ++i) {
+            auto [child_size, child_depth, child_count, child_leaf_count, child_internode_count] = 
+                calculate_tree_size(internode->child_[i], depth + 1); // Add size of each child
+            size += child_size; // Accumulate size
+            max_depth = std::max(max_depth, child_depth); // Update max_depth
+            node_count += child_count; // Accumulate node count
+            leaf_count += child_leaf_count; // Accumulate leaf count
+            internode_count += child_internode_count; // Accumulate internode count
+        }
+    } else {
+        leaf_count++; // Increment leaf count
+    }
+
+    if (!root->isleaf()) {
+        auto internode = static_cast<Masstree::internode<P>*>(root);
+        size += sizeof(*internode);
+    } else {
+        auto leaf = static_cast<Masstree::leaf<P>*>(root);
+        size += sizeof(*leaf);
+    }
+
+    return {size, max_depth, node_count, leaf_count, internode_count}; // Return the total size, maximum depth, total node count, leaf count, and internode count
+}
+
 // Multi-key search using Coroutines
 template <typename P>
 inline ermia::coro::generator<bool>
@@ -945,7 +982,10 @@ mbtree<P>::search_coro(const key_type &k, OID &o, threadinfo &ti,
   int match;
   key_indexed_position kx;
   Masstree::node_base<P>* root = const_cast<Masstree::node_base<P>*>(lp.root_);
-
+  // auto [size, max_depth, node_count, leaf_count, internode_count] = calculate_tree_size(root); // Capture both size and depth
+  // std::cout << "size: " << size << ", max depth: " << max_depth << ", node_count: " << node_count 
+  //           << ", leaf_count: " << leaf_count << ", internode_count: " << internode_count << std::endl; // Print both
+  // std::cout << "leaf_width: " << P::leaf_width << std::endl; // Print the leaf width
 retry:
   // variables in reach_leaf
   const Masstree::node_base<P>* n[2];
