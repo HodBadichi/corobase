@@ -97,13 +97,32 @@ class node_base : public make_nodeversion<P>::type {
   inline PROMISE(leaf_type*) reach_leaf(const key_type& k, nodeversion_type& version,
                                               threadinfo& ti) const;
 
-  void prefetch_full() const {
-    for (int i = 0;
-         i < std::min(16 * std::min(P::leaf_width, P::internode_width) + 1,
-                      4 * 64);
-         i += 64)
-      __builtin_prefetch((const char*)this + i);
+  void prefetch_full() const { \
+    for (int i = 0; \
+         i < std::min(16 * std::min(P::leaf_width, P::internode_width) + 1, \
+                      4 * 64); \
+         i += 64) \
+      __builtin_prefetch((const char*)this + i); \
   }
+
+#define PREFETCH_FULL_FUNC(suffix) \
+  void prefetch_full_##suffix() const { \
+    for (int i = 0; \
+         i < std::min(16 * std::min(P::leaf_width, P::internode_width) + 1, \
+                      4 * 64); \
+         i += 64) \
+      __builtin_prefetch((const char*)this + i); \
+  }
+
+  // Generate 8 prefetch_full functions
+  PREFETCH_FULL_FUNC(1)
+  PREFETCH_FULL_FUNC(2)
+  PREFETCH_FULL_FUNC(3)
+  PREFETCH_FULL_FUNC(4)
+  PREFETCH_FULL_FUNC(5)
+  PREFETCH_FULL_FUNC(6)
+  PREFETCH_FULL_FUNC(7)
+  PREFETCH_FULL_FUNC(8)
 
   void print(FILE* f, const char* prefix, int indent, int kdepth);
 };

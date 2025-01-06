@@ -1002,28 +1002,89 @@ retry2:
   }
 
   // Loop over internal nodes.
-  while (!v[sense].isleaf()) {
-    const Masstree::internode<P>* in = static_cast<const Masstree::internode<P>*>(n[sense]);
-    const auto kav = _mm512_set1_epi64(lp.ka_.ikey());
-    int kp = Masstree::internode<P>::bound_type::upper(kav, *in, nullptr);
-    n[!sense] = in->child_[kp];
-    if (!n[!sense]) goto retry2;
-    n[!sense]->prefetch_full();
-    co_await std::experimental::suspend_always{};
-    v[!sense] = n[!sense]->stable_annotated(ti.stable_fence(), nullptr);
-    if (likely(!in->has_changed(v[sense]))) {
-      sense = !sense;
-      continue;
-    }
+  auto in = static_cast<const Masstree::internode<P>*>(n[sense]);
+  auto kav = _mm512_set1_epi64(lp.ka_.ikey());
+  int kp = Masstree::internode<P>::bound_type::upper(kav, *in, nullptr);
+  n[!sense] = in->child_[kp];
+  n[!sense]->prefetch_full_1();
+  co_await std::experimental::suspend_always{};
+  v[!sense] = n[!sense]->stable_annotated(ti.stable_fence(), nullptr);
+  sense = !sense;
+  
 
-    typename Masstree::node_base<P>::nodeversion_type oldv = v[sense];
-    v[sense] = in->stable_annotated(ti.stable_fence(), nullptr);
-    if (oldv.has_split(v[sense]) &&
-        in->stable_last_key_compare(lp.ka_, v[sense], ti) > 0) {
-      goto retry2;
-    }
+  // 2nd child
+  in = static_cast<const Masstree::internode<P>*>(n[sense]);
+  kav = _mm512_set1_epi64(lp.ka_.ikey());
+  kp = Masstree::internode<P>::bound_type::upper(kav, *in, nullptr);
+  n[!sense] = in->child_[kp];
+  n[!sense]->prefetch_full_2();
+  co_await std::experimental::suspend_always{};
+  v[!sense] = n[!sense]->stable_annotated(ti.stable_fence(), nullptr);
+  sense = !sense;
+
+  // 3rd child
+  in = static_cast<const Masstree::internode<P>*>(n[sense]);
+  kav = _mm512_set1_epi64(lp.ka_.ikey());
+  kp = Masstree::internode<P>::bound_type::upper(kav, *in, nullptr);
+  n[!sense] = in->child_[kp];
+  n[!sense]->prefetch_full_3();
+  co_await std::experimental::suspend_always{};
+  v[!sense] = n[!sense]->stable_annotated(ti.stable_fence(), nullptr);
+  sense = !sense;
+
+  // 4th child
+  in = static_cast<const Masstree::internode<P>*>(n[sense]);
+  kav = _mm512_set1_epi64(lp.ka_.ikey());
+  kp = Masstree::internode<P>::bound_type::upper(kav, *in, nullptr);
+  n[!sense] = in->child_[kp];
+  n[!sense]->prefetch_full_4();
+  co_await std::experimental::suspend_always{};
+  v[!sense] = n[!sense]->stable_annotated(ti.stable_fence(), nullptr);
+  sense = !sense;
+
+  // 5th child
+  in = static_cast<const Masstree::internode<P>*>(n[sense]);
+  kav = _mm512_set1_epi64(lp.ka_.ikey());
+  kp = Masstree::internode<P>::bound_type::upper(kav, *in, nullptr);
+  n[!sense] = in->child_[kp];
+  n[!sense]->prefetch_full_5();
+  co_await std::experimental::suspend_always{};
+  v[!sense] = n[!sense]->stable_annotated(ti.stable_fence(), nullptr);
+  sense = !sense;
+
+  // 6th child
+  in = static_cast<const Masstree::internode<P>*>(n[sense]);
+  kav = _mm512_set1_epi64(lp.ka_.ikey());
+  kp = Masstree::internode<P>::bound_type::upper(kav, *in, nullptr);
+  n[!sense] = in->child_[kp];
+  n[!sense]->prefetch_full_6();
+  co_await std::experimental::suspend_always{};
+  v[!sense] = n[!sense]->stable_annotated(ti.stable_fence(), nullptr);
+  sense = !sense;
+
+  // 7th child
+  in = static_cast<const Masstree::internode<P>*>(n[sense]);
+  kav = _mm512_set1_epi64(lp.ka_.ikey());
+  kp = Masstree::internode<P>::bound_type::upper(kav, *in, nullptr);
+  n[!sense] = in->child_[kp];
+  n[!sense]->prefetch_full_7();
+  co_await std::experimental::suspend_always{};
+  v[!sense] = n[!sense]->stable_annotated(ti.stable_fence(), nullptr);
+  sense = !sense;
+
+  // 8th child
+  in = static_cast<const Masstree::internode<P>*>(n[sense]);
+  kav = _mm512_set1_epi64(lp.ka_.ikey());
+  kp = Masstree::internode<P>::bound_type::upper(kav, *in, nullptr);
+  n[!sense] = in->child_[kp];
+  n[!sense]->prefetch_full_8();
+  co_await std::experimental::suspend_always{};
+  v[!sense] = n[!sense]->stable_annotated(ti.stable_fence(), nullptr);
+  sense = !sense;
+
+  if (!v[sense].isleaf()) {
+    std::runtime_error("not a leaf");
   }
-
   lp.v_ = v[sense];
   lp.n_ = const_cast<Masstree::leaf<P>*>(static_cast<const Masstree::leaf<P>*>(n[sense]));
 
