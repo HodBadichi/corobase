@@ -756,9 +756,11 @@ void bench_worker::Scheduler() {
     coroutine_batch_end_epoch = 0;
     if (transactions <= 0)
     {
-      std::cerr << "stop perf..." << std::endl;
-      kill(ermia::config::perf_pid, SIGINT);
-      waitpid(ermia::config::perf_pid, nullptr, 0);
+      if (ermia::config::enable_perf) {
+        std::cerr << "stop perf..." << std::endl;
+        kill(ermia::config::perf_pid, SIGINT);
+        waitpid(ermia::config::perf_pid, nullptr, 0);
+      }
       return;
     }
     transactions -= ermia::config::coro_batch_size;
