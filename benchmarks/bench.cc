@@ -343,27 +343,6 @@ void bench_runner::start_measurement() {
     (*it)->Start();
   }
 
-  pid_t perf_pid;
-  if (ermia::config::enable_perf) {
-    std::cerr << "start perf..." << std::endl;
-
-    std::stringstream parent_pid;
-    parent_pid << getpid();
-
-    pid_t pid = fork();
-    // Launch profiler
-    if (pid == 0) {
-      if(ermia::config::perf_record_event != "") {
-        exit(execl("/specific/disk1/roeew-local/linux/tools/perf/perf","perf","record", "-F", "99", "-e", ermia::config::perf_record_event.c_str(),
-                   "-p", parent_pid.str().c_str(), nullptr));
-      } else {
-        exit(execl("/specific/disk1/roeew-local/linux/tools/perf/perf","perf","stat", "-B", "-e",  "mem_load_retired.l1_miss,mem_load_retired.l2_miss,longest_lat_cache.miss,mem_load_retired.l1_hit, MEM_INST_RETIRED.ALL_LOADS,longest_lat_cache.miss", 
-                   "-p", parent_pid.str().c_str(), nullptr));
-      }
-    } else {
-      perf_pid = pid;
-    }
-  }
   barrier_a.wait_for();  // wait for all threads to start up
   std::map<std::string, size_t> table_sizes_before;
   if (ermia::config::verbose) {
@@ -429,6 +408,28 @@ void bench_runner::start_measurement() {
   }
 
   util::timer t, t_nosync;
+    pid_t perf_pid;
+  if (ermia::config::enable_perf) {
+    std::cerr << "start perf..." << std::endl;
+
+    std::stringstream parent_pid;
+    parent_pid << getpid();
+
+    pid_t pid = fork();
+    // Launch profiler
+    if (pid == 0) {
+      if(ermia::config::perf_record_event != "") {
+        exit(execl("/specific/disk1/roeew-local/linux/tools/perf/perf","perf","record", "-F", "99", "-e", ermia::config::perf_record_event.c_str(),
+                   "-p", parent_pid.str().c_str(), nullptr));
+      } else {
+        exit(execl("/specific/disk1/roeew-local/linux/tools/perf/perf","perf","stat", "-B", "-e",  "cycles,L1D_PEND_MISS.FB_FULL, mem_inst_retired.all_loads, l1d_pend_miss.pending,l1d_pend_miss.pending_cycles,mem_load_retired.l1_miss ", 
+                   "-p", parent_pid.str().c_str(), nullptr));
+      }
+    } else {
+      ermia::config::perf_pid = pid;
+    }
+  }
+  sleep(1);
   barrier_b.count_down();  // bombs away!
 
   double total_util = 0;
@@ -486,7 +487,7 @@ void bench_runner::start_measurement() {
   const unsigned long elapsed_nosync = t_nosync.lap();
   if (ermia::config::enable_perf) {
     std::cerr << "stop perf..." << std::endl;
-    kill(perf_pid, SIGINT);
+    kill(ermia::config::perf_pid, SIGINT);
     waitpid(perf_pid, nullptr, 0);
   }
 
@@ -748,9 +749,19 @@ void bench_worker::Scheduler() {
   barrier_a->count_down();
   barrier_b->wait_for();
    __itt_resume();
-
+  int epoch_cnt = 0;
+  int transactions = 3e6;
+  
   while (running) {
     coroutine_batch_end_epoch = 0;
+    if (transactions <= 0)
+    {
+      std::cerr << "stop perf..." << std::endl;
+      kill(ermia::config::perf_pid, SIGINT);
+      waitpid(ermia::config::perf_pid, nullptr, 0);
+      return;
+    }
+    transactions -= ermia::config::coro_batch_size;
     ermia::epoch_num begin_epoch = ermia::MM::epoch_enter();
     uint32_t todo = ermia::config::coro_batch_size;
     util::timer t;

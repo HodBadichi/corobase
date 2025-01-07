@@ -83,6 +83,7 @@ extern uint32_t coro_batch_size;
 extern bool coro_batch_schedule;
 
 extern bool scan_with_it;
+extern int perf_pid;
 
 // Create an object for each version and install directly on the main
 // indirection arrays only; for experimental purpose only to see the

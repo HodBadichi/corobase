@@ -80,6 +80,7 @@ uint32_t command_log_buffer_mb = 16;
 bool index_probe_only = false;
 bool amac_version_chain = false;
 bool numa_spread = false;
+int perf_pid = -1;
 
 void init() {
   ALWAYS_ASSERT(threads);
