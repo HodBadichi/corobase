@@ -130,7 +130,7 @@ void bench_worker::MyWork(char *) {
     txn_counts.resize(workload.size());
     barrier_a->count_down();
     barrier_b->wait_for();
-
+  
     while (running) {
       uint32_t workload_idx = fetch_workload();
       do_workload_function(workload_idx);
@@ -756,10 +756,12 @@ void bench_worker::Scheduler() {
     coroutine_batch_end_epoch = 0;
     if (transactions <= 0)
     {
+      __itt_pause();
       if (ermia::config::enable_perf) {
         std::cerr << "stop perf..." << std::endl;
         kill(ermia::config::perf_pid, SIGINT);
         waitpid(ermia::config::perf_pid, nullptr, 0);
+        
       }
       return;
     }
