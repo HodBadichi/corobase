@@ -22,7 +22,7 @@ CoroBase inherits the shared-everything architecture, synchronization and concur
 
 Ubuntu
 ```
-apt-get install -y cmake clang-8 libc++-8-dev libc++abi-8-dev
+apt-get install -y cmake clang-10 libc++-8-dev libc++abi-10-dev
 apt-get install -y libnuma-dev libibverbs-dev libgflags-dev libgoogle-glog-dev
 ```
 
@@ -56,9 +56,9 @@ $ cmake ../ -DCMAKE_BUILD_TYPE=[Debug/Release/RelWithDebInfo]
 $ make -jN
 ```
 
-Currently the code can compile under Clang 8+. E.g., to use Clang 8, issue the following `cmake` command instead:
+Currently the code can compile under Clang 10+. E.g., to use Clang 10, issue the following `cmake` command instead:
 ```
-$ CC=clang-8 CXX=clang++-8 cmake ../ -DCMAKE_BUILD_TYPE=[Debug/Release/RelWithDebInfo]
+$ CC=clang-10 CXX=clang++-10 cmake ../ -DCMAKE_BUILD_TYPE=[Debug/Release/RelWithDebInfo]
 ```
 
 After `make` there will be two executables under `build`: 
