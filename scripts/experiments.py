@@ -6,20 +6,21 @@ from CExperimentManager.CExperimentData import CExperimentData
 
 def GetMetricsList():
     lMetrics = []
+    lMetrics.append(CMetric("cycles", '(\d{1,3}(?:,\d{3})*)\s+cycles', 1))
     lMetrics.append(CMetric("L1 misses", '(\d{1,3}(?:,\d{3})*)\s+mem_load_retired.l1_miss', 1))
     lMetrics.append(CMetric("L2 misses", '(\d{1,3}(?:,\d{3})*)\s+mem_load_retired.l2_miss', 1))
-    lMetrics.append(CMetric("L3 misses", '(\d{1,3}(?:,\d{3})*)\s+longest_lat_cache.miss', 1))
+    lMetrics.append(CMetric("L3 misses", '(\d{1,3}(?:,\d{3})*)\s+mem_load_retired.l3_miss', 1))
     lMetrics.append(CMetric("L1 hits", '(\d{1,3}(?:,\d{3})*)\s+mem_load_retired.l1_hit', 1))
-    # lMetrics.append(CMetric("l1d_pend_miss.pending", '(\d{1,3}(?:,\d{3})*)\s+l1d_pend_miss.pending', 1))
-    # lMetrics.append(CMetric("l1d_pend_miss.pending_cycles", '(\d{1,3}(?:,\d{3})*)\s+l1d_pend_miss.pending_cycles', 1))
-    lMetrics.append(CMetric("all loads", '(\d{1,3}(?:,\d{3})*)\s+MEM_INST_RETIRED.ALL_LOADS', 1))
-    lMetrics.append(CMetric("Throughput", 'agg_throughput: (\d+) ops\/sec',1))
+    lMetrics.append(CMetric("longest_lat_cache.miss", '(\d{1,3}(?:,\d{3})*)\s+longest_lat_cache.miss', 1))
+    lMetrics.append(CMetric("l1d_pend_miss.fb_full", '(\d{1,3}(?:,\d{3})*)\s+l1d_pend_miss.fb_full', 1))
+    lMetrics.append(CMetric("dTLB-loads", '(\d{1,3}(?:,\d{3})*)\s+dTLB-loads', 1))
+    lMetrics.append(CMetric("dTLB-loads-misses", '(\d{1,3}(?:,\d{3})*)\s+dTLB-loads-misses', 1))
     
     return lMetrics
 
 def GetExperimentsList():
     lExperiments = []
-    lBatchesSizes = [ 1,4,5,6,10,30]
+    lBatchesSizes = [ 1,2,3]
     sProgramPath = '/specific/disk1/hodbadihi/MLP/corobase/build/ermia_SI'
 
     for nBatchSize in lBatchesSizes:

@@ -414,7 +414,6 @@ void bench_runner::start_measurement() {
 
     std::stringstream parent_pid;
     parent_pid << getpid();
-
     pid_t pid = fork();
     // Launch profiler
     if (pid == 0) {
@@ -422,7 +421,7 @@ void bench_runner::start_measurement() {
         exit(execl("/specific/disk1/roeew-local/linux/tools/perf/perf","perf","record", "-F", "99", "-e", ermia::config::perf_record_event.c_str(),
                    "-p", parent_pid.str().c_str(), nullptr));
       } else {
-        exit(execl("/specific/disk1/roeew-local/linux/tools/perf/perf","perf","stat", "-B", "-e",  "cycles,L1D_PEND_MISS.FB_FULL, mem_inst_retired.all_loads, l1d_pend_miss.pending,l1d_pend_miss.pending_cycles,mem_load_retired.l1_miss ", 
+        exit(execl("/specific/disk1/roeew-local/linux/tools/perf/perf","perf","stat", "-B", "-e",  "cycles,mem_load_retired.l1_miss, mem_load_retired.l2_miss,longest_lat_cache.miss, mem_load_retired.l3_miss, mem_load_retired.l1_hit, l1d_pend_miss.fb_full, dTLB-loads, dTLB-loads-misses", 
                    "-p", parent_pid.str().c_str(), nullptr));
       }
     } else {
@@ -761,8 +760,8 @@ void bench_worker::Scheduler() {
         std::cerr << "stop perf..." << std::endl;
         kill(ermia::config::perf_pid, SIGINT);
         waitpid(ermia::config::perf_pid, nullptr, 0);
-        
       }
+      ermia::config::benchmark_seconds = 0;
       return;
     }
     transactions -= ermia::config::coro_batch_size;

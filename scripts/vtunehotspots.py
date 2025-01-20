@@ -16,7 +16,7 @@ def ParseOutput(sOutput, sWantedFunctionName):
     raise Exception(f"Function {sWantedFunctionName} not found in output")
 
 def getErmiaCommand(nBatchSize):
-    return f"/specific/disk1/hodbadihi/MLP/corobase/build/ermia_SI -physical_workers_only=1 -index_probe_only=1 -node_memory_gb=80 -null_log_device=1 -coro_tx=1 -coro_batch_size={nBatchSize} -verbose=1 -benchmark ycsb -threads 1 -scale_factor 10 -seconds 30 -log_data_dir /dev/shm/hodbadihi/ermia-log -log_buffer_mb=128 -log_segment_mb=16384 -parallel_loading -benchmark_options '-w C -r 10 -s 200000000 -t simple-coro'"
+    return f"/specific/disk1/hodbadihi/MLP/corobase/build/ermia_SI -physical_workers_only=1 -index_probe_only=1 -node_memory_gb=80 -null_log_device=1 -coro_tx=1 -coro_batch_size={nBatchSize} -verbose=1 -benchmark ycsb -threads 1 -scale_factor 10 -seconds 60 -log_data_dir /dev/shm/hodbadihi/ermia-log -log_buffer_mb=128 -log_segment_mb=16384 -parallel_loading -benchmark_options '-w C -r 10 -s 200000000 -t simple-coro'"
 
 def getCollectHotSpotCMD(result_dir):
         return f"/opt/intel/oneapi/vtune/2025.0/bin64/vtune -collect hotspots -start-paused -result-dir {result_dir}"
@@ -31,9 +31,9 @@ def main():
 
 
     dResultsStdOuts = {}
-    lBatchesSizes = [ 1]
+    lBatchesSizes = [ 1,2,3]
     sWantedFunctionName = "prefetch_full"
-    nAttempts = 1
+    nAttempts = 3
 
     for nBatchSize in lBatchesSizes:
         for nAttempt in range(nAttempts):
@@ -57,7 +57,9 @@ def main():
             print(f"Batch size: {nBatchSize}, Attempt: {nAttempt}")
             nFunctionTime = ParseOutput(dResultsStdOuts[nBatchSize][nAttempt], sWantedFunctionName)
             print(f"\tTime for {sWantedFunctionName}: `{nFunctionTime}`[s]")
-            
+            # Save the results to a file
+            with open("results.txt", "a") as results_file:  # Open results.txt in append mode
+                results_file.write(f"Batch size: {nBatchSize}, Attempt: {nAttempt}, Time for {sWantedFunctionName}: `{nFunctionTime}`[s]\n")
 
 
 if __name__ == "__main__":
